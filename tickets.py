@@ -1,5 +1,8 @@
 from random import randint
+import json
 # --------------------------------
+
+
 
 # Represents a ticket
 class Ticket:
@@ -40,30 +43,33 @@ class Ticket:
 class Tickets:
 
 	def __init__(self):
-		self._tickets = [Ticket('test1'), Ticket('test2')]
-		self._number_of_tickets = 2
+		self._problems_from_each_list = 0
+		self._lists = []
+		self.results = []
 
 
-	def loadTickets(self, url):
-		# ~~~~
-		return
+	def loadTickets(self, json_data):
+		
+		with open(json_data, "r") as data_file:
+			data = json.load(data_file)
+			self._problems_from_each_list = int(data["problems_from_each_list"])
+
+			self._lists = [{"name": l["name"], "tickets": [Ticket(t["url"]) for t in l["tickets"]]} for l in data["lists"]]
 
 
-	def getNumberOfTickets(self):
-		return self._number_of_tickets
 
-	def getTicket(self, number):
-		if (number < self._number_of_tickets):
-			return self._tickets[number]
+	def getTicket(self, list_number, ticket_number):
+		if (list_number < len(self._lists)) and (ticket_number < len(self._lists[list_number]["tickets"])):
+			return self._lists[list_number]["tickets"][ticket_number]
 		else:
 			# Indexoutofrange
 			return False
 
-	def getRandomFreeTicket(self):
+	def getRandomFreeTicket(self, list_number):
 		while (True):
-			i = randint(0, self.getNumberOfTickets() - 1)
-			if self._tickets[i].isFree():
-				return self._tickets[i]
+			i = randint(0, len(self._lists[list_number]["tickets"]) - 1)
+			if self.getTicket(list_number, i).isFree():
+				return self.getTicket(list_number, i)
 
 
 TicketsAPI = Tickets()

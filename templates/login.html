@@ -2,6 +2,7 @@
 
 {% if session['logged_in'] %}
 <p>Logged in as: {{session['username']}}</p>
+<p><a href='/'>Main</a></p>
 {% else %}
 <form action="/login" method="POST">
   <input type="username" name="username" placeholder="Username">

@@ -1,6 +1,5 @@
 from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
 from random import randint
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tableusersdef import *
 from tablehistorydef import *
@@ -35,22 +34,16 @@ def login():
 		s = Session()
 		query = s.query(User).filter(User.username.in_([USERNAME]))
 		result = query.first()
-		if result:
-			# successful login
-			session['logged_in'] = True
-			session['username'] = USERNAME
-
-			return redirect(url_for('index'))
-		else:
+		if not result:		
 			# register new user
 			user = User(USERNAME)
 			s.add(user)
 			s.commit()
+			
+		session['logged_in'] = True
+		session['username'] = USERNAME
 
-			session['logged_in'] = True
-			session['username'] = USERNAME
-
-			return redirect(url_for('index'))
+		return redirect(url_for('index'))
 			
 	else:
 		return render_template('login.html')
@@ -89,9 +82,10 @@ def random():
 			return render_template('random.html', number=result.number)
 		else:
 			# give random ticket to a student
+			# Doesn't use exam parameters yet
 			
 
-			ticket = TicketsAPI.getRandomFreeTicket()
+			ticket = TicketsAPI.getRandomFreeTicket(0)
 			ticket.giveTo(username)
 			number = ticket.getNumber()
 
@@ -108,24 +102,38 @@ def random():
 			return render_template('random.html', number=number)
 
 
-# not used
+
+@app.route('/load')
+def load():
+	# loads ticket lists from json
+	# -------------------------------
+
+
+	TicketsAPI.loadTickets('multilist.json')
+	return redirect(url_for('index'))
+	
+
+@app.route('/finished', methods=['POST', 'GET'])
+def finished():
+	# saves exam results
+	# -----------------------
+
+	if request.method == 'POST':
+		username = str(request.form['username'])
+		listnumber = int(request.form['listnumber'])
+		ticketnumber = int(request.form['number'])
+		time = str(request.form['time'])
+
+		TicketsAPI.results.append(repr([username, listnumber, ticketnumber, time]))
+
+		return redirect(url_for('index'))
+
+	else:
+		return render_template('finished.html')
+
 @app.route('/history')
 def history():
-	# pulls out history for current user
-	# ---------------------------------------
-
-	if not session.get('logged_in'):
-		return redirect(url_for('login'))
-	else:
-		# search for all entries with given username
-		Session = sessionmaker(bind=history_engine)
-		s = Session()
-		username = session['username']
-		query = s.query(Entry).filter(Entry.username.in_([username]))
-		# create list
-		hist = [x.number for x in query.all()]
-		# reverse so last numbers are on top
-		hist.reverse()
-
-
-		return render_template('history.html', hist=hist)
+	# print results
+	# --------------------------
+	
+	return render_template('history.html', hist=TicketsAPI.results)
