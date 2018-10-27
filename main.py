@@ -1,3 +1,4 @@
+from pathlib import Path
 from flask import Flask, redirect, render_template, request, session, url_for
 from sqlalchemy.orm import sessionmaker
 from tableusersdef import *
@@ -5,8 +6,11 @@ from tablehistorydef import *
 from tickets import *
 
 
+JSON_PATH = Path('json')
+
 app = Flask(__name__)
 app.secret_key = 'veryverysecretkey1'
+app.config['JSON_PATH'] = JSON_PATH
 
 
 @app.route('/')
@@ -73,13 +77,29 @@ def random():
 			return render_template('random.html', number=number)
 
 
-@app.route('/load')
+@app.route('/load', methods=['POST', 'GET'])
 def load():
-	# loads ticket lists from json
+	# loads ticket lists from uploaded json file
 	# -------------------------------
+	if request.method == 'POST':
+		if 'file' not in request.files:
+			print('No file part')
+			return redirect(request.url)
+		file = request.files['file']
+		if file.filename == '':
+			print('No selected file')
+			return redirect(request.url)
 
-	TicketsAPI.loadTickets('multilist.json')
-	return redirect(url_for('index'))
+		filename = 'examparams.json'
+		filepath = app.config['JSON_PATH'] / filename
+		file.save(str(filepath))
+
+		TicketsAPI.loadTickets(filepath)
+
+		return redirect(url_for('index'))
+	else:
+		return render_template('load.html')
+
 
 
 @app.route('/finished', methods=['POST', 'GET'])
