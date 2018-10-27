@@ -59,11 +59,14 @@ def random():
 	if not session.get('logged_in'):
 		return redirect(url_for('login'))
 	else:
+		if not TicketsAPI.ticketsLoaded():
+			return redirect(url_for('load'))
 		# check if we already gave random number to this student
 		username = session['username']
 		result = checkUser(username, history_engine, Entry)
 		if result:
-			return render_template('random.html', number=result.number)
+			ticket = TicketsAPI.getTicket(0, result.number)
+			return render_template('random.html', number=result.number, url=ticket.getUrl())
 		else:
 			# give random ticket to a student
 			# Doesn't use exam parameters yet
