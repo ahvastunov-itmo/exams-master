@@ -89,9 +89,9 @@ def random():
 			# give random ticket to a student
 			# Doesn't use exam parameters yet
 			username = session['username']
-			number = giveRandomTicket(username)
+			number, url = giveRandomTicket(username)
 
-			return render_template('random.html', number=number)
+			return render_template('random.html', number=number, url=url)
 
 
 @app.route('/load')
@@ -173,4 +173,4 @@ def giveRandomTicket(username):
 	session.add(entry)
 	session.commit()
 
-	return number
+	return number, ticket.getUrl()
