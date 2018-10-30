@@ -6,11 +6,9 @@ from tablehistorydef import *
 from tickets import *
 
 
-JSON_PATH = Path('json')
-
 app = Flask(__name__)
 app.secret_key = 'veryverysecretkey1'
-app.config['JSON_PATH'] = JSON_PATH
+app.config['JSON_PATH'] = Path('json/examparams.json')
 
 
 @app.route('/')
@@ -83,16 +81,15 @@ def load():
 	# -------------------------------
 	if request.method == 'POST':
 		if 'file' not in request.files:
-			print('No file part')
+			app.logger.info('No file part')
 			return redirect(request.url)
 		file = request.files['file']
 		if file.filename == '':
-			print('No selected file')
+			app.logger.info('No selected file')
 			return redirect(request.url)
 
-		filename = 'examparams.json'
-		filepath = app.config['JSON_PATH'] / filename
-		file.save(str(filepath))
+		filepath = str(app.config['JSON_PATH'])
+		file.save(filepath)
 
 		TicketsAPI.loadTickets(filepath)
 
