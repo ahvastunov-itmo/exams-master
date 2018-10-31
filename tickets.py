@@ -46,16 +46,20 @@ class Tickets:
 		self._problems_from_each_list = 0
 		self._lists = []
 		self.results = []
+		self._loaded = False
 
 
 	def loadTickets(self, json_data):
-		
 		with open(json_data, "r") as data_file:
 			data = json.load(data_file)
 			self._problems_from_each_list = int(data["problems_from_each_list"])
 
 			self._lists = [{"name": l["name"], "tickets": [Ticket(t["url"]) for t in l["tickets"]]} for l in data["lists"]]
+		self._loaded = True
 
+
+	def ticketsLoaded(self):
+		return self._loaded
 
 
 	def getTicket(self, list_number, ticket_number):
@@ -64,6 +68,7 @@ class Tickets:
 		else:
 			# Indexoutofrange
 			return False
+
 
 	def getRandomFreeTicket(self, list_number):
 		while (True):
