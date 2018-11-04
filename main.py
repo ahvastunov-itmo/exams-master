@@ -102,11 +102,11 @@ def load():
 	# -------------------------------
 	if request.method == 'POST':
 		if 'file' not in request.files:
-			app.logger.info('No file part')
+			app.logger.warning('No file part')
 			return redirect(request.url)
 		file = request.files['file']
 		if not file.filename:
-			app.logger.info('No selected file')
+			app.logger.warning('No selected file')
 			return redirect(request.url)
 
 		filepath = str(app.config['JSON_PATH'])
