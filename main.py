@@ -138,6 +138,14 @@ def history():
 	return render_template('history.html', hist=TicketsAPI.results)
 
 
+@app.route('/status')
+@rbac.allow(['professor'], ['GET'])
+def status():
+	"""Shows given tickets."""
+	history = tablehistorydef.get_history()
+	return render_template('history.html', hist=history)
+
+
 def checkUser(username, engine, dbName):
 	# Checks if user in database
 
