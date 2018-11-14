@@ -39,7 +39,7 @@ class Ticket:
 
 
 
-# API for working with tickets 
+# API for working with tickets
 class Tickets:
 
 	def __init__(self):
@@ -70,11 +70,24 @@ class Tickets:
 			return False
 
 
-	def getRandomFreeTicket(self, list_number):
-		while (True):
-			i = randint(0, len(self._lists[list_number]["tickets"]) - 1)
-			if self.getTicket(list_number, i).isFree():
-				return self.getTicket(list_number, i)
+	def getRandomTicket(self, list_number):
+		i = randint(0, len(self._lists[list_number]["tickets"]) - 1)
+		return i, self.getTicket(list_number, i)
+
+
+	def getUserTickets(self):
+		"""Return a list of tickets for a user"""
+
+		tickets = []
+		for i in range(len(self._lists)):
+			given = []
+			while len(given) < self._problems_from_each_list:
+				number, ticket = self.getRandomTicket(i)
+				if not (number in given):
+					given.append(number)
+					tickets.append(ticket)
+
+		return tickets
 
 
 TicketsAPI = Tickets()
