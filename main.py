@@ -6,6 +6,7 @@ import tablehistorydef
 from tickets import TicketsAPI
 from flask_rbac import RBAC
 import csv
+from io import StringIO, BytesIO
 
 
 app = Flask(__name__)
@@ -110,7 +111,7 @@ def load():
 
 
 @app.route('/finished', methods=['POST', 'GET'])
-@rbac.allow(['professor'], ['POST', 'GET'])
+@rbac.allow(['professor', 'student'], ['POST', 'GET'])
 def finished():
 	# saves exam results
 	# -----------------------
@@ -136,11 +137,16 @@ def history(file=None):
 	# print results
 	# --------------------------
 	if 'csv' in request.form:
-		with open('history.csv', 'w') as csvfile:
-			writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			for row in TicketsAPI.results:
-				writer.writerow(list(row))
-		return send_file('history.csv', mimetype='text/csv')
+		proxy = StringIO()
+		writer = csv.writer(proxy, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+		writer.writerows(TicketsAPI.results)
+
+		mem = BytesIO()
+		mem.write(proxy.getvalue().encode('utf-8'))
+		mem.seek(0)
+		proxy.close()
+
+		return send_file(mem, attachment_filename='history.csv', as_attachment=True, mimetype='text/csv')
 
 	if 'html' in request.form:
 		return render_template('history.html', hist=TicketsAPI.results)
