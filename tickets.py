@@ -80,12 +80,15 @@ class Tickets:
 
 		tickets = []
 		for i in range(len(self._lists)):
-			given = []
-			while len(given) < self._problems_from_each_list:
-				number, ticket = self.getRandomTicket(i)
-				if not (number in given):
-					given.append(number)
-					tickets.append(ticket)
+			if len(self._lists[i]["tickets"]) <= self._problems_from_each_list:
+				tickets.extend(self._lists[i]["tickets"])
+			else:
+				given = []
+				while len(given) < self._problems_from_each_list:
+					number, ticket = self.getRandomTicket(i)
+					if not (number in given):
+						given.append(number)
+						tickets.append(ticket)
 
 		return tickets
 
