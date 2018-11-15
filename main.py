@@ -111,7 +111,7 @@ def load():
 
 
 @app.route('/finished', methods=['POST', 'GET'])
-@rbac.allow(['professor', 'student'], ['POST', 'GET'])
+@rbac.allow(['professor'], ['POST', 'GET'])
 def finished():
 	# saves exam results
 	# -----------------------
