@@ -1,10 +1,13 @@
 from pathlib import Path
 from flask import Flask, redirect, render_template, request, session, url_for
+from flask import send_file, send_from_directory, Response
 from sqlalchemy.orm import sessionmaker
 import tableusersdef
 import tablehistorydef
 from tickets import TicketsAPI
 from flask_rbac import RBAC
+import csv
+from io import StringIO, BytesIO
 
 
 app = Flask(__name__)
@@ -126,9 +129,10 @@ def finished():
 		username = str(request.form['username'])
 		listnumber = int(request.form['listnumber'])
 		ticketnumber = int(request.form['number'])
+		grade = int(request.form['grade'])
 		time = str(request.form['time'])
 
-		TicketsAPI.results.append(repr([username, listnumber, ticketnumber, time]))
+		TicketsAPI.results.append((username, listnumber, ticketnumber, grade, time))
 
 		return redirect(url_for('index'))
 
@@ -136,15 +140,27 @@ def finished():
 		return render_template('finished.html')
 
 
-@app.route('/history')
-@rbac.allow(['student', 'professor'], ['GET'])
-#@rbac.deny(['anonymous'], ['GET'])
-def history():
+@app.route('/history', methods=['POST', 'GET'])
+@rbac.allow(['student', 'professor', 'admin'], ['GET', 'POST'])
+def history(file=None):
 	# print results
 	# --------------------------
-	for x in get_current_user().get_roles():
-		print(x.name)
-	return render_template('history.html', hist=TicketsAPI.results)
+	if 'csv' in request.form:
+		proxy = StringIO()
+		writer = csv.writer(proxy, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+		writer.writerows(TicketsAPI.results)
+
+		mem = BytesIO()
+		mem.write(proxy.getvalue().encode('utf-8'))
+		mem.seek(0)
+		proxy.close()
+
+		return send_file(mem, attachment_filename='history.csv', as_attachment=True, mimetype='text/csv')
+
+	if 'html' in request.form:
+		return render_template('history.html', hist=TicketsAPI.results)
+
+	return render_template('history_choose.html')
 
 
 @app.route('/status')
