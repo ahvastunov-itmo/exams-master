@@ -66,7 +66,7 @@ def login():
 
 
 @app.route('/logout')
-@rbac.allow(['student', 'professor', 'admin'], ['GET'])
+@rbac.exempt
 def logout():
 	# ends session and deletes username
 	# ------------------------------------
@@ -77,7 +77,7 @@ def logout():
 
 
 @app.route('/random')
-@rbac.allow(['student'], ['GET'])
+@rbac.allow(['student', 'admin'], ['GET'])
 def random():
 	# generates random ticket number and adds to the history
 	# -----------------------------------------------
@@ -103,7 +103,7 @@ def random():
 
 
 @app.route('/load', methods=['POST', 'GET'])
-@rbac.allow(['professor'], ['POST', 'GET'])
+@rbac.allow(['professor', 'admin'], ['POST', 'GET'])
 def load():
 	# loads ticket lists from uploaded json file
 	# -------------------------------
@@ -128,7 +128,7 @@ def load():
 
 
 @app.route('/finished', methods=['POST', 'GET'])
-@rbac.allow(['professor'], ['POST', 'GET'])
+@rbac.allow(['professor', 'admin'], ['POST', 'GET'])
 def finished():
 	# saves exam results
 	# -----------------------
@@ -148,7 +148,7 @@ def finished():
 
 
 @app.route('/history')
-@rbac.allow(['student', 'professor'], ['GET'])
+@rbac.allow(['student', 'professor', 'admin'], ['GET'])
 #@rbac.deny(['anonymous'], ['GET'])
 def history():
 	# print results
@@ -159,7 +159,7 @@ def history():
 
 
 @app.route('/status')
-@rbac.allow(['professor'], ['GET'])
+@rbac.allow(['professor', 'admin'], ['GET'])
 def status():
 	"""Shows given tickets."""
 	history = tablehistorydef.get_history()
