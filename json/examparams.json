@@ -1,0 +1,22 @@
+{
+	"number_of_lists": "2",
+	"problems_from_each_list": "1",
+	"lists": [
+		{
+			"name": "theory questions",
+			"tickets": [
+				{"url": "/list1/ticket1.pdf"},
+				{"url": "/list1/ticket2.pdf"},
+				{"url": "/list1/ticket3.pdf"}
+			]
+		},
+		{
+			"name": "practice problems",
+			"tickets": [
+				{"url": "/list2/ticket1.pdf"},
+				{"url": "/list2/ticket2.pdf"},
+				{"url": "/list2/ticket3.pdf"}
+			]
+		}
+	]
+}

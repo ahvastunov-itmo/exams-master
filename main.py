@@ -1,3 +1,4 @@
+from pathlib import Path
 from flask import Flask, redirect, render_template, request, session, url_for
 from sqlalchemy.orm import sessionmaker
 import tableusersdef
@@ -8,6 +9,7 @@ from flask_rbac import RBAC
 
 app = Flask(__name__)
 app.secret_key = 'veryverysecretkey1'
+app.config['JSON_PATH'] = Path('json/examparams.json')
 app.config['RBAC_USE_WHITE'] = True
 rbac = RBAC(app)
 rbac.set_role_model(tableusersdef.Role)
@@ -21,7 +23,6 @@ def get_current_user():
 		return checkUser(session.get('username'), tableusersdef.users_engine, tableusersdef.User)
 
 rbac.set_user_loader(get_current_user)
-
 
 
 @app.route('/')
@@ -90,14 +91,29 @@ def random():
 		return render_template('random.html', tickets=getUserTickets(username))
 
 
-@app.route('/load')
-@rbac.allow(['professor', 'student'], ['GET'])
+@app.route('/load', methods=['POST', 'GET'])
+@rbac.allow(['professor'], ['GET'])
 def load():
-	# loads ticket lists from json
+	# loads ticket lists from uploaded json file
 	# -------------------------------
+	if request.method == 'POST':
+		if 'file' not in request.files:
+			app.logger.warning('No file part')
+			return redirect(request.url)
+		file = request.files['file']
+		if not file.filename:
+			app.logger.warning('No selected file')
+			return redirect(request.url)
 
-	TicketsAPI.loadTickets('multilist.json')
-	return redirect(url_for('index'))
+		filepath = str(app.config['JSON_PATH'])
+		file.save(filepath)
+
+		TicketsAPI.loadTickets(filepath)
+
+		return redirect(url_for('index'))
+	else:
+		return render_template('load.html')
+
 
 
 @app.route('/finished', methods=['POST', 'GET'])
@@ -129,6 +145,14 @@ def history():
 	for x in get_current_user().get_roles():
 		print(x.name)
 	return render_template('history.html', hist=TicketsAPI.results)
+
+
+@app.route('/status')
+@rbac.allow(['professor'], ['GET'])
+def status():
+	"""Shows given tickets."""
+	history = tablehistorydef.get_history()
+	return render_template('history.html', hist=history)
 
 
 def checkUser(username, engine, dbName):

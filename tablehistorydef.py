@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 history_engine = create_engine('sqlite:///history.db', echo=True)
 Base = declarative_base()
@@ -22,3 +23,9 @@ class Entry(Base):
 
 # create tables
 Base.metadata.create_all(history_engine)
+
+def get_history():
+	Session = sessionmaker(bind=history_engine)
+	session = Session()
+	entries = session.query(Entry).all()
+	return [(entry.username, entry.number) for entry in entries]
