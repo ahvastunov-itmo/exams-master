@@ -3,7 +3,10 @@
 <p>Logged in as: {{session['username']}}</p>
 <p><a href='/random'>Random</a></p>
 <p><a href='/logout'>Logout</a></p>
-<p>Your ticket number = {{number}}</p>
-<p>Your ticket url = {{url}}</p>
+{% for ticket in tickets %}
+<p>Your ticket number = {{ticket.number}}</p>
+<p>Your ticket url = {{ticket.url}}</p>
+<p> ---------------------------------------- </p>
+{% endfor %}
 
 {% endblock %}

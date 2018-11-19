@@ -86,16 +86,9 @@ def random():
 		# check if we already gave random number to this student
 		username = session['username']
 		result = checkUser(username, tablehistorydef.history_engine, tablehistorydef.Entry)
-		if result:
-			ticket = TicketsAPI.getTicket(0, result.number)
-			return render_template('random.html', number=result.number, url=ticket.getUrl())
-		else:
-			# give random ticket to a student
-			# Doesn't use exam parameters yet
-			username = session['username']
-			number, url = giveRandomTicket(username)
-
-			return render_template('random.html', number=number, url=url)
+		if not result:
+			giveRandomTickets(username)
+		return render_template('random.html', tickets=getUserTickets(username))
 
 
 @app.route('/load', methods=['POST', 'GET'])
@@ -174,6 +167,14 @@ def checkUser(username, engine, dbName):
 	return result
 
 
+def getUserTickets(username):
+	"""returns a list of tickets assigned for a user"""
+	Session = sessionmaker(bind=tablehistorydef.history_engine)
+	session = Session()
+	tickets = session.query(tablehistorydef.Entry).filter(tablehistorydef.Entry.username.in_([username])).all()
+	return tickets
+
+
 def registerUser(username, role):
 
 	Session = sessionmaker(bind=tableusersdef.users_engine)
@@ -186,18 +187,17 @@ def registerUser(username, role):
 	session.commit()
 
 
-def giveRandomTicket(username):
-
-	ticket = TicketsAPI.getRandomFreeTicket(0)
-	ticket.giveTo(username)
-	number = ticket.getNumber()
+def giveRandomTickets(username):
 
 	Session = sessionmaker(bind=tablehistorydef.history_engine)
 	session = Session()
 
-	entry = tablehistorydef.Entry(username, number)
+	for ticket in TicketsAPI.getUserTickets():
+		ticket.giveTo(username)
+		number = ticket.getNumber()
+		url = ticket.getUrl()
 
-	session.add(entry)
+		entry = tablehistorydef.Entry(username, number, url)
+		session.add(entry)
+
 	session.commit()
-
-	return number, ticket.getUrl()
