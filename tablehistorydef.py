@@ -13,10 +13,12 @@ class Entry(Base):
 	id = Column(Integer, primary_key=True)
 	username = Column(String)
 	number = Column(Integer)
+	url = Column(String)
 
-	def __init__(self, username, number):
+	def __init__(self, username, number, url):
 		self.username = username
 		self.number = number
+		self.url = url
 
 
 # create tables
