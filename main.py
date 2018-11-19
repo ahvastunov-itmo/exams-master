@@ -21,8 +21,11 @@ def get_current_user():
 		return anonymous
 	else:
 		return checkUser(session.get('username'), tableusersdef.users_engine, tableusersdef.User)
-
 rbac.set_user_loader(get_current_user)
+
+def get_current_role():
+	return get_current_user().roles[0]
+
 
 
 @app.route('/')
@@ -31,7 +34,7 @@ def index():
 	# index
 	# -------------------------------------
 
-	return (render_template('index.html') if session.get('logged_in')
+	return (render_template('index.html', role=get_current_role().name) if session.get('logged_in')
 	else redirect(url_for('login')))
 
 
@@ -44,12 +47,13 @@ def login():
 
 	if request.method == 'POST':
 		username = str(request.form['username'])
+		role = request.form.get('role')
 
 		# search for username in database
 		result = checkUser(username, tableusersdef.users_engine, tableusersdef.User)
 		if not result:
 			# register new user
-			registerUser(username, 'student')
+			registerUser(username, role)
 
 		session['logged_in'] = True
 		session['username'] = username
@@ -99,7 +103,7 @@ def random():
 
 
 @app.route('/load', methods=['POST', 'GET'])
-@rbac.allow(['professor'], ['GET'])
+@rbac.allow(['professor'], ['POST', 'GET'])
 def load():
 	# loads ticket lists from uploaded json file
 	# -------------------------------
