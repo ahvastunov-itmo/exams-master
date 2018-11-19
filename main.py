@@ -1,10 +1,13 @@
 from pathlib import Path
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import (Flask, redirect, render_template, request, session,
+	url_for, flash, send_file, send_from_directory, Response)
 from sqlalchemy.orm import sessionmaker
 import tableusersdef
 import tablehistorydef
 from tickets import TicketsAPI
 from flask_rbac import RBAC
+import csv
+from io import StringIO, BytesIO
 
 
 app = Flask(__name__)
@@ -89,20 +92,15 @@ def random():
 		return redirect(url_for('login'))
 	else:
 		if not TicketsAPI.ticketsLoaded():
-			return redirect(url_for('load'))
+			app.logger.warning('No tickets loaded')
+			return redirect(url_for('index'))
+			# return redirect(url_for('random'))
 		# check if we already gave random number to this student
 		username = session['username']
 		result = checkUser(username, tablehistorydef.history_engine, tablehistorydef.Entry)
-		if result:
-			ticket = TicketsAPI.getTicket(0, result.number)
-			return render_template('random.html', number=result.number, url=ticket.getUrl())
-		else:
-			# give random ticket to a student
-			# Doesn't use exam parameters yet
-			username = session['username']
-			number, url = giveRandomTicket(username)
-
-			return render_template('random.html', number=number, url=url)
+		if not result:
+			giveRandomTickets(username)
+		return render_template('random.html', tickets=getUserTickets(username))
 
 
 @app.route('/load', methods=['POST', 'GET'])
@@ -140,9 +138,10 @@ def finished():
 		username = str(request.form['username'])
 		listnumber = int(request.form['listnumber'])
 		ticketnumber = int(request.form['number'])
+		grade = int(request.form['grade'])
 		time = str(request.form['time'])
 
-		TicketsAPI.results.append(repr([username, listnumber, ticketnumber, time]))
+		TicketsAPI.results.append((username, listnumber, ticketnumber, grade, time))
 
 		return redirect(url_for('index'))
 
@@ -150,15 +149,27 @@ def finished():
 		return render_template('finished.html')
 
 
-@app.route('/history')
-@rbac.allow(['student', 'professor', 'admin'], ['GET'])
-#@rbac.deny(['anonymous'], ['GET'])
-def history():
+@app.route('/history', methods=['POST', 'GET'])
+@rbac.allow(['student', 'professor', 'admin'], ['GET', 'POST'])
+def history(file=None):
 	# print results
 	# --------------------------
-	for x in get_current_user().get_roles():
-		print(x.name)
-	return render_template('history.html', hist=TicketsAPI.results)
+	if 'csv' in request.form:
+		proxy = StringIO()
+		writer = csv.writer(proxy, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+		writer.writerows(TicketsAPI.results)
+
+		mem = BytesIO()
+		mem.write(proxy.getvalue().encode('utf-8'))
+		mem.seek(0)
+		proxy.close()
+
+		return send_file(mem, attachment_filename='history.csv', as_attachment=True, mimetype='text/csv')
+
+	if 'html' in request.form:
+		return render_template('history.html', hist=TicketsAPI.results)
+
+	return render_template('history_choose.html')
 
 
 @app.route('/status')
@@ -181,6 +192,14 @@ def checkUser(username, engine, dbName):
 	return result
 
 
+def getUserTickets(username):
+	"""returns a list of tickets assigned for a user"""
+	Session = sessionmaker(bind=tablehistorydef.history_engine)
+	session = Session()
+	tickets = session.query(tablehistorydef.Entry).filter(tablehistorydef.Entry.username.in_([username])).all()
+	return tickets
+
+
 def registerUser(username, role):
 
 	Session = sessionmaker(bind=tableusersdef.users_engine)
@@ -193,18 +212,17 @@ def registerUser(username, role):
 	session.commit()
 
 
-def giveRandomTicket(username):
-
-	ticket = TicketsAPI.getRandomFreeTicket(0)
-	ticket.giveTo(username)
-	number = ticket.getNumber()
+def giveRandomTickets(username):
 
 	Session = sessionmaker(bind=tablehistorydef.history_engine)
 	session = Session()
 
-	entry = tablehistorydef.Entry(username, number)
+	for ticket in TicketsAPI.getUserTickets():
+		ticket.giveTo(username)
+		number = ticket.getNumber()
+		url = ticket.getUrl()
 
-	session.add(entry)
+		entry = tablehistorydef.Entry(username, number, url)
+		session.add(entry)
+
 	session.commit()
-
-	return number, ticket.getUrl()
