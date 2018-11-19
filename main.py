@@ -1,5 +1,6 @@
 from pathlib import Path
 from flask import Flask, redirect, render_template, request, session, url_for
+from flask import flash
 from sqlalchemy.orm import sessionmaker
 import tableusersdef
 import tablehistorydef
@@ -82,7 +83,9 @@ def random():
 		return redirect(url_for('login'))
 	else:
 		if not TicketsAPI.ticketsLoaded():
-			return redirect(url_for('load'))
+			app.logger.warning('No tickets loaded')
+			return redirect(url_for('index'))
+			# return redirect(url_for('random'))
 		# check if we already gave random number to this student
 		username = session['username']
 		result = checkUser(username, tablehistorydef.history_engine, tablehistorydef.Entry)
