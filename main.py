@@ -1,6 +1,6 @@
 from pathlib import Path
-from flask import Flask, redirect, render_template, request, session, url_for
-from flask import flash
+from flask import (Flask, redirect, render_template, request, session,
+	url_for, flash)
 from sqlalchemy.orm import sessionmaker
 import tableusersdef
 import tablehistorydef
