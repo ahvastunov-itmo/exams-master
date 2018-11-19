@@ -16,16 +16,19 @@ rbac.set_role_model(tableusersdef.Role)
 rbac.set_user_model(tableusersdef.User)
 anonymous = tableusersdef.User('anonymous', roles=[tableusersdef.Role.get_by_name('anonymous')])
 
+
 def get_current_user():
 	if not session.get('logged_in'):
 		return anonymous
 	else:
 		return checkUser(session.get('username'), tableusersdef.users_engine, tableusersdef.User)
+
+
 rbac.set_user_loader(get_current_user)
 
-def get_current_role():
-	return get_current_user().roles[0]
 
+def get_current_role():
+	return get_current_user().roles[0].name
 
 
 @app.route('/')
@@ -34,7 +37,7 @@ def index():
 	# index
 	# -------------------------------------
 
-	return (render_template('index.html', role=get_current_role().name) if session.get('logged_in')
+	return (render_template('index.html', role=get_current_role()) if session.get('logged_in')
 	else redirect(url_for('login')))
 
 
