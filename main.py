@@ -19,13 +19,19 @@ rbac.set_role_model(tableusersdef.Role)
 rbac.set_user_model(tableusersdef.User)
 anonymous = tableusersdef.User('anonymous', roles=[tableusersdef.Role.get_by_name('anonymous')])
 
+
 def get_current_user():
 	if not session.get('logged_in'):
 		return anonymous
 	else:
 		return checkUser(session.get('username'), tableusersdef.users_engine, tableusersdef.User)
 
+
 rbac.set_user_loader(get_current_user)
+
+
+def get_current_role():
+	return get_current_user().roles[0].name
 
 
 @app.route('/')
@@ -34,7 +40,7 @@ def index():
 	# index
 	# -------------------------------------
 
-	return (render_template('index.html') if session.get('logged_in')
+	return (render_template('index.html', role=get_current_role()) if session.get('logged_in')
 	else redirect(url_for('login')))
 
 
@@ -47,12 +53,13 @@ def login():
 
 	if request.method == 'POST':
 		username = str(request.form['username'])
+		role = request.form.get('role')
 
 		# search for username in database
 		result = checkUser(username, tableusersdef.users_engine, tableusersdef.User)
 		if not result:
 			# register new user
-			registerUser(username, 'student')
+			registerUser(username, role)
 
 		session['logged_in'] = True
 		session['username'] = username
@@ -65,7 +72,7 @@ def login():
 
 
 @app.route('/logout')
-@rbac.allow(['student', 'professor', 'admin'], ['GET'])
+@rbac.exempt
 def logout():
 	# ends session and deletes username
 	# ------------------------------------
@@ -76,7 +83,7 @@ def logout():
 
 
 @app.route('/random')
-@rbac.allow(['student'], ['GET'])
+@rbac.allow(['student', 'admin'], ['GET'])
 def random():
 	# generates random ticket number and adds to the history
 	# -----------------------------------------------
@@ -97,7 +104,7 @@ def random():
 
 
 @app.route('/load', methods=['POST', 'GET'])
-@rbac.allow(['professor'], ['GET'])
+@rbac.allow(['professor', 'admin'], ['POST', 'GET'])
 def load():
 	# loads ticket lists from uploaded json file
 	# -------------------------------
@@ -122,7 +129,7 @@ def load():
 
 
 @app.route('/finished', methods=['POST', 'GET'])
-@rbac.allow(['professor'], ['POST', 'GET'])
+@rbac.allow(['professor', 'admin'], ['POST', 'GET'])
 def finished():
 	# saves exam results
 	# -----------------------
@@ -166,7 +173,7 @@ def history(file=None):
 
 
 @app.route('/status')
-@rbac.allow(['professor'], ['GET'])
+@rbac.allow(['professor', 'admin'], ['GET'])
 def status():
 	"""Shows given tickets."""
 	history = tablehistorydef.get_history()

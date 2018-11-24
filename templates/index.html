@@ -1,7 +1,20 @@
 {% block body %}
 
 <p>Logged in as: {{session['username']}}</p>
+
+{% if role == 'student' %}
+
 <p><a href='/random'>Random </a></p>
+
+{% elif role == 'professor' %}
+
+<p><a href='/finished'>Grade</a></p>
+<p><a href='/history'>Results</a></p>
+<p><a href='/load'>Load</a></p>
+<p><a href='/status'>Status</a></p>
+
+{% endif %}
+
 <p><a href='/logout'>Logout</a></p>
 
 {% endblock %}
