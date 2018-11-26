@@ -23,7 +23,17 @@ def initialize_extensions(app):
     rbac.init_app(app)
     login.init_app(app)
 
-    from project.models import User, Role
+    from project.models import User, Role, Entry
+
+    with app.test_request_context():
+        db.create_all()
+
+        for role_name in ['anonymous', 'student', 'professor', 'admin']:
+            if not Role.query.filter_by(name=role_name).first():
+                role = Role(role_name)
+                db.session.add(role)
+
+        db.session.commit()
 
     rbac.set_user_model(User)
     rbac.set_role_model(Role)
@@ -37,7 +47,7 @@ def initialize_extensions(app):
             return User.query.filter_by(
                 username=session.get('username')).first()
         else:
-            return User('anon', roles=[Role('anonymous')])
+            return User('anon', roles=[Role.get_by_name('anonymous')])
 
     rbac.set_user_loader(get_current_user)
 
