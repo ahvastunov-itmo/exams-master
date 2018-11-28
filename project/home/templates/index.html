@@ -1,6 +1,6 @@
 {% block body %}
 
-<p>Logged in as: {{session['username']}}</p>
+<p>Logged in as: {{current_user.username}}</p>
 
 {% if role == 'student' %}
 
