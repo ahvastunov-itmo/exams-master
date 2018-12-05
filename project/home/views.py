@@ -11,7 +11,7 @@ from . import home_blueprint
 @rbac.exempt
 def index():
     if session.get('logged_in'):
-        return render_template('index.html', role=current_user.roles[0].name)
+        return redirect(url_for(session.get('role') + '.index'))
     else:
         return redirect(url_for('home.login'))
 
@@ -30,11 +30,12 @@ def login():
         user.authenticated = True
         session['logged_in'] = True
         session['username'] = username
+        session['role'] = user.get_role()
         db.session.add(user)
         db.session.commit()
         login_user(user)
 
-        return redirect(url_for('home.index'))
+        return redirect(url_for(user.get_role() + '.index'))
     else:
         return render_template('login.html')
 
@@ -49,4 +50,5 @@ def logout():
     logout_user()
     session['logged_in'] = False
     session.pop('username', None)
+    session.pop('role', None)
     return redirect(url_for('home.index'))

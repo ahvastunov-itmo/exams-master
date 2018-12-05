@@ -1,20 +1,22 @@
-{% block body %}
+{% extends "base.html" %}
+
+{% block app_content %}
 
 <p>Logged in as: {{current_user.username}}</p>
 
 {% if role == 'student' %}
 
-<p><a href='/random'>Random </a></p>
+<p><a href="/random" class="btn btn-default">Random </a></p>
 
 {% elif role == 'professor' %}
 
-<p><a href='/finished'>Grade</a></p>
-<p><a href='/history'>Results</a></p>
-<p><a href='/load'>Load</a></p>
-<p><a href='/status'>Status</a></p>
+<p><a href="/finished" class="btn btn-default">Grade</a></p>
+<p><a href="/history" class="btn btn-default">Results</a></p>
+<p><a href="/load" class="btn btn-default">Load</a></p>
+<p><a href="/status" class="btn btn-default">Status</a></p>
 
 {% endif %}
 
-<p><a href='/logout'>Logout</a></p>
+<p><a href="/logout" class="btn btn-default">Logout</a></p>
 
 {% endblock %}

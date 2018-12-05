@@ -1,12 +1,21 @@
-{% block body %}
+{% extends "student.html" %}
 
-<p>Logged in as: {{session['username']}}</p>
-<p><a href='/random'>Random</a></p>
-<p><a href='/logout'>Logout</a></p>
-{% for ticket in tickets %}
-<p>Your ticket number = {{ticket.number}}</p>
-<p>Your ticket url = {{ticket.url}}</p>
-<p> ---------------------------------------- </p>
-{% endfor %}
+{% block app_content %}
+
+<h3>Your tickets:</h3>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">URL</th>
+        </tr>
+    </thead>
+    {% for url in entry.urls.split(',') %}
+    <tr>
+        <td>
+            {{url}}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 
 {% endblock %}

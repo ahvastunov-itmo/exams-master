@@ -7,4 +7,4 @@ admin_blueprint = Blueprint(
     static_folder='static'
 )
 
-#from . import views
+from . import views
