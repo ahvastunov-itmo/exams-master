@@ -59,8 +59,8 @@ class Tickets:
         return self._loaded
 
     def getTicket(self, list_number, ticket_number):
-        if ((list_number < len(self._lists)) and
-                (ticket_number < len(self._lists[list_number]["tickets"]))):
+        if (list_number < len(self._lists)) and \
+                (ticket_number < len(self._lists[list_number]["tickets"])):
             return self._lists[list_number]["tickets"][ticket_number]
         else:
             return None
