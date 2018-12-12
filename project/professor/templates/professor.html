@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block navbar_items %}
+<li><a href="{{ url_for('professor.load') }}">Tickets</a></li>
+<li><a href="{{ url_for('professor.status') }}">Status</a></li>
+<li><a href="{{ url_for('professor.grade') }}">Grade</a></li>
+<li><a href="{{ url_for('professor.history') }}">Results</a></li>
+
+{% endblock %}
+
+{% block app_content %}
+    <h3>Hello, {{session.get('username')}}!</h3>
+{% endblock %}

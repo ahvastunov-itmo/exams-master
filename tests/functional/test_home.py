@@ -43,4 +43,3 @@ def test_valid_login_logout(test_client, init_database):
     assert b'form' in response.data
     assert b'submit' in response.data
     assert b'Logged in' not in response.data
-

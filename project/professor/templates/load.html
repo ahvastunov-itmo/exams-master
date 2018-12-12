@@ -1,9 +1,14 @@
-{% block body %}
+{% extends "professor.html" %}
 
-<p>Upload json data_file</p>
-<form action="/load" method="POST"  enctype="multipart/form-data">
-	<input type="file" name="file">
-	<input type="submit" value="Upload">
+{% block app_content %}
+
+<h3>Upload exam parameters</h3>
+
+<form action="/professor/load" class="form-inline" method="POST"  enctype="multipart/form-data">
+    <div class="form-group">
+        <input type="file" class="form-control-file" name="file">
+    </div>
+    <input type="submit" class="btn btn-default" value="Upload">
 </form>
 
 {% endblock %}

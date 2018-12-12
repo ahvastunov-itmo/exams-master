@@ -1,17 +1,27 @@
-{% block body %}
+{% extends "base.html" %}
+
+{% block app_content %}
 
 {% if session['logged_in'] %}
 <p>Logged in as: {{session['username']}}</p>
-<p><a href='/'>Main</a></p>
+<p><a href='/' class="btn btn-default">Main</a></p>
 {% else %}
 <form action="/login" method="POST">
-  <input type="username" name="username" placeholder="Username">
-  <select name="role">
-  	<option value="student">Student</option>
-  	<option value="professor">Professor</option>
-  	<option value="admin">Admin</option>
-  </select>
-  <input type="submit" value="Log in">
+    <div class="form-group">
+        <label>Username</label>
+        <input type="username" name="username" class="form-control" placeholder="Username">
+    </div>
+    <div class="form-group">
+        <label>Role</label>
+        <select name="role" class="form-control">
+            <option value="student">Student</option>
+            <option value="professor">Professor</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+
+    <input type="submit" class="btn btn-primary" value="Log in">
+
 </form>
 {% endif %}
 

@@ -1,7 +1,8 @@
 from flask import Flask, session
 from flask_rbac import RBAC
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, current_user
+from flask_login import LoginManager
+from flask_bootstrap import Bootstrap
 
 
 db = SQLAlchemy()
@@ -22,6 +23,7 @@ def initialize_extensions(app):
     db.init_app(app)
     rbac.init_app(app)
     login.init_app(app)
+    Bootstrap(app)
 
     from project.models import User, Role, Entry
 
@@ -58,7 +60,7 @@ def register_blueprints(app):
     from project.professor import professor_blueprint
     from project.student import student_blueprint
 
-    app.register_blueprint(admin_blueprint)
+    app.register_blueprint(admin_blueprint, url_prefix='/admin')
     app.register_blueprint(home_blueprint)
-    app.register_blueprint(professor_blueprint)
-    app.register_blueprint(student_blueprint)
+    app.register_blueprint(professor_blueprint, url_prefix='/professor')
+    app.register_blueprint(student_blueprint, url_prefix='/student')
